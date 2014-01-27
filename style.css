@@ -1,0 +1,17 @@
+#chatbox{
+ width: 90%;
+ height: 75%;
+ overflow:scroll;
+ float: left;
+}
+#userlist{
+ width: 9%;
+ float: right;
+}
+#sendmsgbox{
+	width: 95%;
+}
+#sendMsgbutton{
+	width: 4%;
+}
+

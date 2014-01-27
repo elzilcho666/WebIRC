@@ -1,0 +1,127 @@
+<html>
+<head>
+<title>Webirc</title>
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<script>
+var webAppUrl = "http://127.0.0.1:8080/";
+var randomUID = Math.random().toString(36).substring(7);
+function addText(name, text){
+	var t = new Date();
+	$("#chatbox").append("<p>"+ "[" + padZeros(t.getHours(), 2) + ":" + padZeros(t.getMinutes(), 2) + "][" + name + "]: "+text+"</p>").hide().fadeIn();
+	$("#chatbox").scrollTop(99999);
+}
+function padZeros(num, length){
+	var str = ''+num;
+	while (str.length < length){
+		str = '0' + str;
+	}
+	return str
+}
+function userList(){
+	var updateUserList = function(lstpkg){
+		var users = lstpkg.users
+		$("#userlist").empty();
+		$.each(users, function(i, val){
+			$("#userlist").append("<p>"+val+"</p>");
+			
+		});
+		setTimeout(userList, 30000);
+	}
+	$.ajax({
+		url:webAppUrl + "lst",
+		type:"get",
+		datatype:"json",
+		success: updateUserList
+	});
+}
+function input(){
+	var message = function(message){
+		addText(message.from, message.msg);
+		input();
+	}
+	var er = function(){
+		setTimeout(input, 5000);
+	}
+	$.ajax({
+		url:webAppUrl + "msgs",
+		type:"get",
+		timeout:"50000",
+		async:"true",
+		datatype:"json",
+		data:{"id":randomUID},
+		success: message,
+		error: er
+	});
+}
+function output(text){
+	$.ajax({
+		url:webAppUrl + "msg",
+		type:"post",
+		data:"data=" + text
+	});
+}
+function sendMSG(){
+	var msg = new Object();
+	msg.from = randomUID;
+	msg.msg = $("#sendmsgbox").val();
+	msg.to = "Main";
+	msg.type = "public";
+	m = JSON.stringify(msg)
+
+		//addText(randomUID, msg);
+	output(m);
+	$("#sendmsgbox").val('');	
+}
+$(document).ready(function(){
+	
+	$("#sendMsgbutton").click(function(){
+		sendMSG();
+	});
+	$("#sendmsgbox").keyup(function(event){
+		if(event.keyCode == 13){
+			sendMSG();
+		}
+	$("#nickbut").click(function(){
+		randomUID = $("#nick").val();
+	});
+	});
+	$("#chatboxes").tabs();
+	$("#nick").val(randomUID);
+	input();
+	userList();
+
+});
+</script>
+<div id='page'>
+
+<div id="chatarea">
+<div id="chatboxes">
+<ul>
+<li><a href="#welcome">Frontpage</a></li>
+<li><a href="#chat">Chat</a></li>
+<li><a href="#settings">Settings</a></li>
+</ul>
+<div id="welcome"><div id='banner'>
+<h1 id="title">WebIRC</h1>
+</div>
+<ul>
+<li>Nae names</li>
+<li>1 channel</li>
+</ul>
+</div>
+<div id="chat">
+<div id="chatbox"></div><div id="userlist"></div><br><br>
+
+<input type="text" id="sendmsgbox">
+<input type="submit" value="enter" id="sendMsgbutton">
+</div>
+<div id="settings">
+Name:<input type="text" id="nick"><input type="submit" id="nickbut" value="Set name">
+</div>
+</div>
+</div>
